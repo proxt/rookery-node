@@ -7,6 +7,11 @@
 # bridge networking those would be Docker's internal 172.x addresses, which
 # clients on the internet can't reach. Host networking makes the container
 # see the VDS's real public interface instead.
+#
+# watchtower polls ghcr.io every 5 minutes and restarts rookery-node on a
+# new :latest — no manual `docker compose pull && up -d` after a push.
+# Restarting briefly drops active sessions on this node (they reconnect
+# through the client's normal retry/backoff).
 services:
   rookery-node:
     image: ghcr.io/proxt/rookery-node:latest
@@ -15,3 +20,11 @@ services:
     network_mode: host
     volumes:
       - ./node.yaml:/etc/rookery/node.yaml:ro
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: rookery-node-watchtower
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 300 --cleanup rookery-node
