@@ -25,6 +25,16 @@ services:
     image: containrrr/watchtower
     container_name: rookery-node-watchtower
     restart: always
+    environment:
+      # containrrr/watchtower hasn't shipped a new image since late 2023;
+      # its bundled Docker client auto-negotiates down to API 1.25 against
+      # modern Docker Engine, which then rejects it (min supported 1.40).
+      # Pin a version watchtower's client actually understands.
+      - DOCKER_API_VERSION=1.43
+      # If the node and the panel ever share a host, each watchtower would
+      # otherwise see the other as a stale copy of itself and kill it.
+      # --scope keeps this instance to its own labeled container.
+      - WATCHTOWER_SCOPE=rookery-node
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     command: --interval 300 --cleanup rookery-node
