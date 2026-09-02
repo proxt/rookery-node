@@ -188,8 +188,8 @@ func (s *Server) handleSession(w http.ResponseWriter, r *http.Request) {
 		BufferedAmountLowThreshold:  s.cfg.BufferedAmountLowThreshold,
 		BufferedAmountHighWaterMark: s.cfg.BufferedAmountHighWaterMark,
 		DataChannelOpenTimeout:      s.cfg.DataChannelOpenTimeout,
-		SubscriptionID:              claims.SubscriptionID,
-		OnBytes:                     func(subID string, up, down uint64) { s.panel.AddBytes(subID, up, down) },
+		UserID:                      claims.UserID,
+		OnBytes:                     func(userID string, up, down uint64) { s.panel.AddBytes(userID, up, down) },
 	}
 
 	s.wg.Add(1)

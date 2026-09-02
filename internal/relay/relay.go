@@ -25,7 +25,7 @@ type Config struct {
 	// OnBytes, if non-nil, is called as traffic is relayed: up is bytes
 	// carried from the client's stream toward the dialed destination, down
 	// is bytes carried the other way. Used to attribute traffic to the
-	// subscription this session authenticated as, for panel reporting.
+	// user this session authenticated as, for panel reporting.
 	OnBytes func(up, down uint64)
 }
 

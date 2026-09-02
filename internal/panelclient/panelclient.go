@@ -1,7 +1,7 @@
 // Package panelclient is a node's connection to its panel: it verifies
 // client session tokens locally (no network round-trip needed — the token
 // is signed with this node's own API key), and periodically reports
-// liveness and per-subscription traffic totals back to the panel.
+// liveness and per-user traffic totals back to the panel.
 package panelclient
 
 import (
@@ -37,7 +37,7 @@ type Client struct {
 	httpClient *http.Client
 
 	mu       sync.Mutex
-	counters map[string]*counter // subscription ID -> accumulated bytes
+	counters map[string]*counter // user ID -> accumulated bytes
 }
 
 type counter struct {
@@ -71,18 +71,18 @@ func (c *Client) VerifyToken(token string) (signaling.Claims, error) {
 	return claims, nil
 }
 
-// AddBytes accumulates traffic for subscriptionID, to be flushed to the
+// AddBytes accumulates traffic for userID, to be flushed to the
 // panel on the next report interval.
-func (c *Client) AddBytes(subscriptionID string, up, down uint64) {
+func (c *Client) AddBytes(userID string, up, down uint64) {
 	if up == 0 && down == 0 {
 		return
 	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	cnt, ok := c.counters[subscriptionID]
+	cnt, ok := c.counters[userID]
 	if !ok {
 		cnt = &counter{}
-		c.counters[subscriptionID] = cnt
+		c.counters[userID] = cnt
 	}
 	cnt.up += up
 	cnt.down += down
@@ -117,9 +117,9 @@ func (c *Client) heartbeat(ctx context.Context) {
 }
 
 type reportEntry struct {
-	SubscriptionID string `json:"subscription_id"`
-	BytesUp        uint64 `json:"bytes_up"`
-	BytesDown      uint64 `json:"bytes_down"`
+	UserID    string `json:"user_id"`
+	BytesUp   uint64 `json:"bytes_up"`
+	BytesDown uint64 `json:"bytes_down"`
 }
 
 func (c *Client) report(ctx context.Context) {
@@ -129,8 +129,8 @@ func (c *Client) report(ctx context.Context) {
 		return
 	}
 	entries := make([]reportEntry, 0, len(c.counters))
-	for subID, cnt := range c.counters {
-		entries = append(entries, reportEntry{SubscriptionID: subID, BytesUp: cnt.up, BytesDown: cnt.down})
+	for userID, cnt := range c.counters {
+		entries = append(entries, reportEntry{UserID: userID, BytesUp: cnt.up, BytesDown: cnt.down})
 	}
 	c.counters = make(map[string]*counter)
 	c.mu.Unlock()

@@ -23,13 +23,13 @@ type Config struct {
 	BufferedAmountLowThreshold  uint64
 	BufferedAmountHighWaterMark uint64
 	DataChannelOpenTimeout      time.Duration
-	// SubscriptionID identifies which subscription authenticated this
+	// UserID identifies which user authenticated this
 	// session (from its verified token), so relayed traffic can be
 	// attributed to it.
-	SubscriptionID string
+	UserID string
 	// OnBytes, if non-nil, is called as traffic is relayed for
-	// SubscriptionID. See relay.Config.OnBytes.
-	OnBytes func(subscriptionID string, up, down uint64)
+	// UserID. See relay.Config.OnBytes.
+	OnBytes func(userID string, up, down uint64)
 }
 
 // Run takes ownership of pc: it waits for the client's DataChannel to arrive
@@ -74,7 +74,7 @@ func Run(ctx context.Context, pc *webrtc.PeerConnection, dcReady <-chan *webrtc.
 
 	relayCfg := relay.Config{DialTimeout: cfg.DialTimeout, AllowPrivateNet: cfg.AllowPrivateNet}
 	if cfg.OnBytes != nil {
-		relayCfg.OnBytes = func(up, down uint64) { cfg.OnBytes(cfg.SubscriptionID, up, down) }
+		relayCfg.OnBytes = func(up, down uint64) { cfg.OnBytes(cfg.UserID, up, down) }
 	}
 	sem := make(chan struct{}, cfg.MaxStreams)
 	var wg sync.WaitGroup

@@ -20,12 +20,12 @@ var (
 	ErrTokenExpired = errors.New("signaling: token expired")
 )
 
-// Claims is what a panel-issued session token asserts: which subscription is
+// Claims is what a panel-issued session token asserts: which user is
 // connecting, which node the token is scoped to, and until when it's valid.
 type Claims struct {
-	SubscriptionID string `json:"sub"`
-	NodeID         string `json:"nid"`
-	Expiry         int64  `json:"exp"` // Unix seconds
+	UserID string `json:"uid"`
+	NodeID string `json:"nid"`
+	Expiry int64  `json:"exp"` // Unix seconds
 }
 
 // IssueToken signs claims with nodeAPIKey, producing the opaque string a

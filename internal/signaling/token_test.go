@@ -8,7 +8,7 @@ import (
 
 func TestIssueVerifyTokenRoundTrip(t *testing.T) {
 	key := []byte("node-api-key")
-	claims := Claims{SubscriptionID: "sub1", NodeID: "node1", Expiry: time.Now().Add(time.Hour).Unix()}
+	claims := Claims{UserID: "user1", NodeID: "node1", Expiry: time.Now().Add(time.Hour).Unix()}
 
 	token, err := IssueToken(key, claims)
 	if err != nil {
@@ -26,7 +26,7 @@ func TestIssueVerifyTokenRoundTrip(t *testing.T) {
 
 func TestVerifyTokenRejectsExpired(t *testing.T) {
 	key := []byte("node-api-key")
-	claims := Claims{SubscriptionID: "sub1", NodeID: "node1", Expiry: time.Now().Add(-time.Minute).Unix()}
+	claims := Claims{UserID: "user1", NodeID: "node1", Expiry: time.Now().Add(-time.Minute).Unix()}
 
 	token, err := IssueToken(key, claims)
 	if err != nil {
@@ -39,7 +39,7 @@ func TestVerifyTokenRejectsExpired(t *testing.T) {
 }
 
 func TestVerifyTokenRejectsWrongKey(t *testing.T) {
-	claims := Claims{SubscriptionID: "sub1", NodeID: "node1", Expiry: time.Now().Add(time.Hour).Unix()}
+	claims := Claims{UserID: "user1", NodeID: "node1", Expiry: time.Now().Add(time.Hour).Unix()}
 	token, err := IssueToken([]byte("key-a"), claims)
 	if err != nil {
 		t.Fatalf("IssueToken() error = %v", err)
@@ -52,7 +52,7 @@ func TestVerifyTokenRejectsWrongKey(t *testing.T) {
 
 func TestVerifyTokenRejectsTamperedPayload(t *testing.T) {
 	key := []byte("node-api-key")
-	claims := Claims{SubscriptionID: "sub1", NodeID: "node1", Expiry: time.Now().Add(time.Hour).Unix()}
+	claims := Claims{UserID: "user1", NodeID: "node1", Expiry: time.Now().Add(time.Hour).Unix()}
 	token, err := IssueToken(key, claims)
 	if err != nil {
 		t.Fatalf("IssueToken() error = %v", err)
