@@ -18,6 +18,11 @@ services:
     container_name: rookery-node
     restart: always
     network_mode: host
+    labels:
+      # Required for the scoped watchtower below to find this container at
+      # all — WATCHTOWER_SCOPE filters targets by this label, not just by
+      # name; without it watchtower silently scans zero containers.
+      - "com.centurylinklabs.watchtower.scope=rookery-node"
     volumes:
       - ./node.yaml:/etc/rookery/node.yaml:ro
 
