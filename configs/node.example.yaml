@@ -1,0 +1,36 @@
+# Copy this to node.yaml. panel_addr/node_id/api_key are required — the node
+# has no user database of its own; it authenticates sessions and reports
+# traffic using credentials the panel gave you when you registered this node
+# (Nodes tab in the panel admin UI, or POST /admin/api/nodes).
+
+# Base URL of the panel this node reports to and verifies session tokens
+# against, e.g. "https://panel.example.com".
+panel_addr: ""
+
+# This node's ID and API key, as issued by the panel when it was registered.
+node_id: ""
+api_key: ""
+
+# Address the HTTP signaling server binds to. Caddy terminates TLS in front
+# of this and reverse-proxies to it; keep it loopback-only.
+# listen_addr: "127.0.0.1:8080"
+
+# Single fixed UDP port for ICE (SettingEngine.SetICEUDPMux). Open this port
+# in the firewall; no ephemeral range is used.
+# ice_udp_port: 51000
+
+# Maximum concurrent smux streams accepted per peer session.
+# max_streams_per_session: 256
+
+# Timeout for the outbound dial a relay stream performs.
+# dial_timeout_seconds: 10
+
+# Refuse to dial RFC1918/loopback/link-local destinations. Keep this true
+# unless you specifically intend to expose your internal network.
+# allow_private_net: false
+
+# DataChannel backpressure thresholds, in KB of bufferedAmount.
+# buffered_amount_low_kb: 256
+# buffered_amount_high_kb: 1024
+
+# log_level: "info"

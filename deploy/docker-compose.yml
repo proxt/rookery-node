@@ -1,0 +1,17 @@
+# Deploy: put this file plus a node.yaml (copy configs/node.example.yaml
+# and fill in panel_addr/node_id/api_key — get those by adding this node in
+# the panel's admin UI first) on the VDS, then `docker compose up -d`.
+#
+# network_mode: host is required, not optional — pion's ICE agent gathers
+# host candidates from the container's own network interfaces. Under normal
+# bridge networking those would be Docker's internal 172.x addresses, which
+# clients on the internet can't reach. Host networking makes the container
+# see the VDS's real public interface instead.
+services:
+  rookery-node:
+    image: ghcr.io/proxt/rookery-node:latest
+    container_name: rookery-node
+    restart: always
+    network_mode: host
+    volumes:
+      - ./node.yaml:/etc/rookery/node.yaml:ro

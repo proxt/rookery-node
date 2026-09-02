@@ -1,0 +1,34 @@
+[Unit]
+Description=Rookery WebRTC tunnel node
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=rookery
+Group=rookery
+ExecStart=/opt/rookery/rookeryd -config /etc/rookery/node.yaml
+Restart=always
+RestartSec=2s
+
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,9 @@
+# Copy to Caddyfile on the node host and replace the hostname below with
+# your own. Caddy terminates TLS (automatic ACME/Let's Encrypt certificate)
+# and reverse-proxies everything to rookeryd's loopback HTTP signaling
+# server. rookeryd itself returns 404 for anything but a validly signed
+# POST /session, so no extra path routing is needed here.
+
+your-node-hostname.example.com {
+	reverse_proxy 127.0.0.1:8080
+}
