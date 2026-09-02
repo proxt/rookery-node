@@ -1,67 +1,66 @@
 # rookery-node
 
-Relay node for [Rookery](https://github.com/proxt/rookery) — a WebRTC-tunnel
-VPN. This repo is just the relay server (`rookeryd`): it terminates client
-WebRTC sessions and relays TCP/UDP traffic. It holds no state of its own —
-users, subscriptions, and traffic stats all live on the **panel**, which is
-part of the main [proxt/rookery](https://github.com/proxt/rookery) repo along
-with the Windows client.
+Relay-нода для [Rookery](https://github.com/proxt/rookery) — WebRTC-туннеля.
+Этот репозиторий содержит только сам relay-сервер (`rookeryd`): он завершает
+WebRTC-сессии клиентов и релеит TCP/UDP-трафик. Нода не хранит никакого
+состояния сама — пользователи, подписки и статистика трафика живут на
+**панели**, которая вместе с Windows-клиентом лежит в основном репозитории
+[proxt/rookery](https://github.com/proxt/rookery).
 
-A node is useless on its own: it needs to be registered with a running panel
-first (panel admin UI → Nodes → Add), which is where you get the
-`node_id`/`api_key` this node's config needs.
+Нода бесполезна сама по себе: сначала её нужно зарегистрировать в работающей
+панели (админка → Ноды → Добавить) — оттуда берутся `node_id`/`api_key` для
+конфига этой ноды.
 
-## Build
+## Сборка
 
 ```
-make build          # bin/rookeryd — static linux/amd64 binary, CGO_ENABLED=0
-make docker-build    # local Docker image (for testing, not publishing)
+make build          # bin/rookeryd — статический линукс-бинарь, CGO_ENABLED=0
+make docker-build    # локальная сборка Docker-образа (для теста, без публикации)
 make test
 make lint
 ```
 
-Every push to `master` publishes `ghcr.io/proxt/rookery-node` via
-`.github/workflows/docker.yml`.
+При каждом пуше в `master` GitHub Actions публикует образ в
+`ghcr.io/proxt/rookery-node` (см. `.github/workflows/docker.yml`).
 
-## Deploy (Docker, recommended)
+## Установка (Docker, рекомендуется)
 
-1. Register this node in the panel's admin UI first — copy the `node_id` and
-   `api_key` it gives you.
-2. Install Docker if you don't have it: `curl -fsSL https://get.docker.com | sudo sh`
-3. On the VDS:
+1. Сначала зарегистрировать эту ноду в админке панели — скопировать выданные
+   `node_id` и `api_key`.
+2. Поставить Docker, если его ещё нет: `curl -fsSL https://get.docker.com | sudo sh`
+3. На VDS:
    ```
    mkdir -p ~/rookery-node && cd ~/rookery-node
    curl -O https://raw.githubusercontent.com/proxt/rookery-node/master/deploy/docker-compose.yml
-   cp configs/node.example.yaml node.yaml   # or just create node.yaml directly
+   cp configs/node.example.yaml node.yaml   # или сразу создать node.yaml
    ```
-   Fill in `panel_addr`, `node_id`, `api_key` in `node.yaml` (see
-   `configs/node.example.yaml` for every field).
+   Заполнить `panel_addr`, `node_id`, `api_key` в `node.yaml` (полный список
+   полей — в `configs/node.example.yaml`).
 4. `sudo docker compose up -d`
 
-`network_mode: host` in the compose file is required, not optional — pion's
-ICE agent needs to see the VDS's real public interface, not Docker's internal
-bridge address.
+`network_mode: host` в compose-файле не опционален — ICE-агенту pion нужно
+видеть реальный публичный интерфейс VDS, а не внутренний адрес Docker-моста.
 
-Put Caddy in front for TLS — see `deploy/Caddyfile.example`.
+Перед нодой стоит поставить Caddy для TLS — см. `deploy/Caddyfile.example`.
 
-### Ports
+### Порты
 
-- **TCP 443** (or 80 for ACME) on Caddy.
-- **UDP `ice_udp_port`** (default 51000) — the only UDP port needed; it's
-  fixed via `SetICEUDPMux`, no ephemeral range.
-- `listen_addr` (default `127.0.0.1:8080`) stays internal, behind Caddy.
+- **TCP 443** (или 80 для ACME) — на Caddy.
+- **UDP `ice_udp_port`** (по умолчанию 51000) — единственный нужный UDP-порт,
+  зафиксирован через `SetICEUDPMux`, диапазон эфемерных портов не используется.
+- `listen_addr` (по умолчанию `127.0.0.1:8080`) остаётся внутренним, за Caddy.
 
-## Deploy without Docker
+## Установка без Docker
 
-See `deploy/systemd/rookery-node.service` and `deploy/Caddyfile.example`.
-Build with `make build`, copy `bin/rookeryd` to `/opt/rookery/rookeryd`,
-point `ExecStart`'s `-config` flag at your `node.yaml`.
+См. `deploy/systemd/rookery-node.service` и `deploy/Caddyfile.example`.
+Собрать через `make build`, скопировать `bin/rookeryd` в `/opt/rookery/rookeryd`,
+указать в `ExecStart` флаг `-config` на свой `node.yaml`.
 
-## Why a separate repo
+## Почему отдельный репозиторий
 
-This node has no dependency on the panel or client beyond the wire protocol
-(session tokens signed by the panel, verified here with the node's own
-`api_key` — see `internal/signaling`). Keeping it in its own repo means you
-can run/update relay nodes independently of the panel and client release
-cycle, and a node's Docker image doesn't need anything from the rest of the
-project checked out to build.
+У ноды нет зависимости от панели или клиента, кроме проводного протокола
+(токены сессий, подписанные панелью, проверяются здесь собственным
+`api_key` ноды — см. `internal/signaling`). Отдельный репозиторий значит,
+что relay-ноды можно запускать и обновлять независимо от цикла релизов
+панели и клиента, а Docker-образ ноды не требует для сборки ничего из
+остального проекта.
