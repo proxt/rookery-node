@@ -15,13 +15,13 @@ import (
 
 // sctpMaxReceiveBufferSize raises the SCTP association's advertised receive
 // window well above pion/sctp's 1MB default. Every smux stream (and its own
-// 4MB/64MB windows, see smux.go) is multiplexed over the same single SCTP
+// 16MB/128MB windows, see smux.go) is multiplexed over the same single SCTP
 // association, so that outer 1MB window — not smux's — ends up the binding
 // constraint: window/RTT caps the whole association to a few MB/s at
 // realistic internet RTTs no matter how generous smux's own buffers are.
 // Sized to match smux's session-wide ceiling so SCTP isn't the tighter of
 // the two.
-const sctpMaxReceiveBufferSize = 64 * 1024 * 1024
+const sctpMaxReceiveBufferSize = 128 * 1024 * 1024
 
 func tuneSettingEngine(se *webrtc.SettingEngine) {
 	se.SetSCTPMaxReceiveBufferSize(sctpMaxReceiveBufferSize)
