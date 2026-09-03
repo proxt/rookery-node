@@ -72,6 +72,7 @@ func New(cfg Config, panel *panelclient.Client) (*Server, error) {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /session", s.handleSession)
+	mux.HandleFunc("GET /ping", handlePing)
 	s.httpSrv = &http.Server{Addr: cfg.ListenAddr, Handler: mux}
 
 	return s, nil
@@ -103,6 +104,14 @@ func (s *Server) Serve(ctx context.Context) error {
 
 	s.wg.Wait()
 	return s.udpMuxCloser.Close()
+}
+
+// handlePing is an unauthenticated, zero-work endpoint clients probe before
+// picking a node, to measure round-trip latency. It does nothing but answer
+// 200 as fast as possible — no token check, no body — so the timing reflects
+// pure network/TLS handshake cost, not request processing.
+func handlePing(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Server) handleSession(w http.ResponseWriter, r *http.Request) {
